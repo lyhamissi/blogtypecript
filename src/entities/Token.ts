@@ -1,4 +1,3 @@
-// src/entities/Token.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -17,7 +16,7 @@ export class Token {
   @Column()
   userId!: number;
 
-  @ManyToOne(() => User, user => user.tokens, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.tokens, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user!: User;
 
