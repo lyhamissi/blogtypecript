@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { Post } from './Post';
 import { OneToMany } from 'typeorm';
-
+import { Token } from './Token';
 
 @Entity('users')
 export class User {
@@ -25,6 +25,9 @@ export class User {
     @Column({ length: 255, nullable: false })
     password!: string;
 
+    @Column({ default: false })
+    isEmailVerified!: boolean;
+
     @CreateDateColumn({ name: 'created_at' })
     created_at!: Date;
 
@@ -33,5 +36,8 @@ export class User {
 
     @OneToMany(() => Post, (post) => post.author)
     posts!: Post[];
+
+    @OneToMany(() => Token, token => token.user)
+    tokens!: Token[];
 
 }
