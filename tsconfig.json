@@ -11,5 +11,5 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": ["src/**/*", "src/types/express.d.ts"]
+  "include": ["src/**/*", "src/types/express.d.ts", "test-email.ts"]
 }

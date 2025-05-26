@@ -1,13 +1,28 @@
 import { Router } from 'express';
-import { register, login } from '../controllers/authController';
-import { getProfile } from '../controllers/authController';
+import {
+  register,
+  login,
+  getProfile,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+} from '../controllers/authController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 
 const router = Router();
 
+// Auth routes
 router.post('/register', register);
 router.post('/login', login);
-// router.get('/profile', authMiddleware, profile);
-router.get('/profile/details', authMiddleware, getProfile);
+
+// Protected route
+router.get('/profile', authMiddleware, getProfile);
+
+// Email verification
+router.get('/verify-email', verifyEmail);
+
+// Forgot and reset password
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 
 export default router;

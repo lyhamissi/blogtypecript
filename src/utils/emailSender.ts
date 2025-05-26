@@ -2,6 +2,9 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
 dotenv.config(); 
+console.log('SMTP_USER:', process.env.SMTP_USER); // should print your email
+console.log('APP_PASS_KEY:', process.env.APP_PASS_KEY ? 'Loaded' : 'Missing');
+
 
 const transporter = nodemailer.createTransport({
   service: 'gmail', 
@@ -19,5 +22,11 @@ export async function sendEmail(to: string, subject: string, html: string) {
     html,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent:', info.response);
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw error; 
+  }
 }
