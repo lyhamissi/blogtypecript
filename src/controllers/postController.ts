@@ -82,11 +82,11 @@ export const updatePost = async (req: AuthenticatedRequest, res: Response): Prom
 export const deletePost = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const userId = req.userId;
-// // 
-//   if (!userId) {
-//     res.status(401).json({ error: 'Unauthorized' });
-//     return;
-//   }
+// 
+  if (!userId) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
 
   try {
     const result = await pool.query('SELECT * FROM posts WHERE id = $1', [id]);
@@ -95,10 +95,10 @@ export const deletePost = async (req: AuthenticatedRequest, res: Response): Prom
       res.status(404).json({ error: 'Post not found' });
       return;
     }
-    // if (post.author !== userId) {
-    //   res.status(403).json({ error: 'Not authorized' });
-    //   return;
-    // }
+    if (post.author !== userId) {
+      res.status(403).json({ error: 'Not authorized' });
+      return;
+    }
 
     await pool.query('DELETE FROM posts WHERE id = $1', [id]);
     res.json({ message: 'Post deleted' });
