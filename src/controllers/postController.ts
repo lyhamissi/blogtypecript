@@ -1,23 +1,16 @@
 // src/controllers/postController.ts
-
 import { Request, Response } from 'express';
 import { AppDataSource } from '../database';
 import { Post } from '../entities/Post';
 
-// Extend Request type to include userId
-interface AuthenticatedRequest extends Request {
-  userId?: number;
-}
-
-const postRepository = AppDataSource.getRepository(Post);
-
-export const createPost = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const createPost = async (req: Request, res: Response): Promise<void> => {
   const { title, body } = req.body;
-  const userId = req.userId;
+  const userId = (req as any).userId;
 
   try {
-    const newPost = postRepository.create({ title, body, author: userId! });
-    const savedPost = await postRepository.save(newPost);
+    const postRepo = AppDataSource.getRepository(Post);
+    const post = postRepo.create({ title, body, author: userId });
+    const savedPost = await postRepo.save(post);
     res.status(201).json(savedPost);
   } catch (err) {
     console.error('Error creating post:', err);
@@ -27,7 +20,9 @@ export const createPost = async (req: AuthenticatedRequest, res: Response): Prom
 
 export const getAllPosts = async (_req: Request, res: Response): Promise<void> => {
   try {
-    const posts = await postRepository.find({ order: { created_at: 'DESC' } });
+    const posts = await AppDataSource.getRepository(Post).find({
+      order: { created_at: 'DESC' },
+    });
     res.json(posts);
   } catch {
     res.status(500).json({ error: 'Failed to fetch posts' });
@@ -37,7 +32,7 @@ export const getAllPosts = async (_req: Request, res: Response): Promise<void> =
 export const getPostById = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   try {
-    const post = await postRepository.findOneBy({ id: Number(id) });
+    const post = await AppDataSource.getRepository(Post).findOneBy({ id: Number(id) });
     if (!post) {
       res.status(404).json({ error: 'Post not found' });
       return;
@@ -48,13 +43,15 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-export const updatePost = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const updatePost = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { title, body } = req.body;
-  const userId = req.userId;
+  const userId = (req as any).userId;
 
   try {
-    const post = await postRepository.findOneBy({ id: Number(id) });
+    const postRepo = AppDataSource.getRepository(Post);
+    const post = await postRepo.findOneBy({ id: Number(id) });
+
     if (!post) {
       res.status(404).json({ error: 'Post not found' });
       return;
@@ -69,24 +66,21 @@ export const updatePost = async (req: AuthenticatedRequest, res: Response): Prom
     post.body = body;
     post.updated_at = new Date();
 
-    const updatedPost = await postRepository.save(post);
+    const updatedPost = await postRepo.save(post);
     res.json(updatedPost);
   } catch {
     res.status(500).json({ error: 'Failed to update post' });
   }
 };
 
-export const deletePost = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const deletePost = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const userId = req.userId;
-
-  if (!userId) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
-  }
+  const userId = (req as any).userId;
 
   try {
-    const post = await postRepository.findOneBy({ id: Number(id) });
+    const postRepo = AppDataSource.getRepository(Post);
+    const post = await postRepo.findOneBy({ id: Number(id) });
+
     if (!post) {
       res.status(404).json({ error: 'Post not found' });
       return;
@@ -97,7 +91,7 @@ export const deletePost = async (req: AuthenticatedRequest, res: Response): Prom
       return;
     }
 
-    await postRepository.remove(post);
+    await postRepo.remove(post);
     res.json({ message: 'Post deleted' });
   } catch {
     res.status(500).json({ error: 'Failed to delete post' });

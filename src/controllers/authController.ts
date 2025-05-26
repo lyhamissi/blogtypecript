@@ -1,24 +1,35 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { pool } from '../database';
+import { AppDataSource } from '../database';
+import { User } from '../entities/User';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'yoursecret';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const { username, email, password } = req.body; // expects "username" from client
+  const { username, email, password } = req.body;
+
   try {
+    const userRepository = AppDataSource.getRepository(User);
+    const existing = await userRepository.findOne({ where: { email } });
+
+    if (existing) {
+      res.status(400).json({ error: 'User already exists' });
+      return;
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await pool.query(
-      'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *',
-      [username, email, hashedPassword]
-    );
 
-    const user = result.rows[0];
+    const newUser = userRepository.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+    const savedUser = await userRepository.save(newUser);
+    const token = jwt.sign({ userId: savedUser.id }, JWT_SECRET, { expiresIn: '1h' });
 
-    res.status(201).json({ user, token });
+    res.status(201).json({ user: savedUser, token });
   } catch (err) {
     console.error('Registration Error:', err);
     res.status(500).json({ error: 'Registration failed' });
@@ -27,9 +38,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
+
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    const user = result.rows[0];
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({ where: { email } });
+
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -49,34 +62,27 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const profile = async (req: Request, res: Response): Promise<void> => {
-  const userId = (req as any).userId;
-  try {
-    const result = await pool.query('SELECT id, name AS username, email FROM users WHERE id = $1', [userId]);
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error('Profile Error:', err);
-    res.status(500).json({ error: 'Could not fetch profile' });
-  }
-};
-
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
   const userId = (req as any).userId;
+
   if (!userId) {
     res.status(401).json({ error: 'User not authenticated' });
     return;
   }
 
   try {
-    const result = await pool.query(
-      'SELECT id, name AS username, email, created_at FROM users WHERE id = $1',
-      [userId]
-    );
-    if (result.rows.length === 0) {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'username', 'email', 'created_at'],
+    });
+
+    if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
-    res.json(result.rows[0]);
+
+    res.json(user);
   } catch (err) {
     console.error('GetProfile Error:', err);
     res.status(500).json({ error: 'Could not fetch profile details' });
