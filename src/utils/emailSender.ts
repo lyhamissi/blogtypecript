@@ -7,7 +7,7 @@ console.log('APP_PASS_KEY:', process.env.APP_PASS_KEY ? 'Loaded' : 'Missing');
 
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail', 
+  service: 'gmail',     
   auth: {
     user: process.env.SMTP_USER, 
     pass: process.env.APP_PASS_KEY, 
