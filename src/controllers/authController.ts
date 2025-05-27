@@ -6,12 +6,13 @@ import { User } from '../entities/User';
 import { Token } from '../entities/Token';
 import { generateToken } from '../utils/tokenGenerator';
 import { sendEmail } from '../utils/emailSender';
+import { UserRole } from '../enums/UserRole';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'yoursecret';
 
 //Register logic 
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const { username, email, password } = req.body;
+  const { username, email, password, userRole } = req.body;
 
   try {
     const userRepository = AppDataSource.getRepository(User);
@@ -22,6 +23,15 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       res.status(400).json({ error: 'User already exists' });
       return;
     }
+    if (userRole && !Object.values(UserRole).includes(userRole)) {
+      res.status(400).json({ error: 'Invalid user role' });
+      return;
+    }
+    const existingUsername = await userRepository.findOne({ where: { username } });
+    if (existingUsername) {
+      res.status(400).json({ error: 'Username already taken' });
+      return;
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -30,7 +40,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       email,
       password: hashedPassword,
       isEmailVerified: false,
+      userRole: userRole || UserRole.USER, // default to 'user' if not provided
     });
+
 
     const savedUser = await userRepository.save(newUser);
 

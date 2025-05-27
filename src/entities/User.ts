@@ -1,15 +1,14 @@
-// src/entities/User.ts
-
 import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    OneToMany,
 } from 'typeorm';
 import { Post } from './Post';
-import { OneToMany } from 'typeorm';
 import { Token } from './Token';
+import { UserRole } from '../enums/UserRole'; // adjust path if needed
 
 @Entity('users')
 export class User {
@@ -28,6 +27,13 @@ export class User {
     @Column({ default: false })
     isEmailVerified!: boolean;
 
+    @Column({
+        type: 'enum',
+        enum: UserRole,
+        default: UserRole.USER,
+    })
+    userRole!: UserRole;
+
     @CreateDateColumn({ name: 'created_at' })
     created_at!: Date;
 
@@ -39,5 +45,4 @@ export class User {
 
     @OneToMany(() => Token, token => token.user)
     tokens!: Token[];
-
 }
