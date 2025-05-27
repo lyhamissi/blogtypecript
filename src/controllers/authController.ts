@@ -9,7 +9,7 @@ import { sendEmail } from '../utils/emailSender';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'yoursecret';
 
-//Register
+//Register logic 
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { username, email, password } = req.body;
 

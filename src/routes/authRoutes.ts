@@ -11,17 +11,17 @@ import { authMiddleware } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-// Auth routes
+// Auth routes for register and login
 router.post('/register', register);
 router.post('/login', login);
 
-// Protected route
+// Protected route for getting a profile of a logged in user
 router.get('/profile', authMiddleware, getProfile);
 
-// Email verification
+// Email verification 
 router.get('/verify-email', verifyEmail);
 
-// Forgot and reset password
+// Forgot and reset password end-points
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 
