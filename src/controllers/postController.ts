@@ -1,99 +1,72 @@
-// src/controllers/postController.ts
 import { Request, Response } from 'express';
-import { AppDataSource } from '../database';
-import { Post } from '../entities/Post';
+import { PostService } from '../services/postServices';
 
 export const createPost = async (req: Request, res: Response): Promise<void> => {
-  const { title, body } = req.body;
-  const userId = (req as any).userId;
-
   try {
-    const postRepo = AppDataSource.getRepository(Post);
-    const post = postRepo.create({ title, body, author: userId });
-    const savedPost = await postRepo.save(post);
+    const { title, body } = req.body; // no author from body!
+    const userId = (req as any).userId;
+
+    const savedPost = await PostService.createPost({ title, body, userId });
     res.status(201).json(savedPost);
   } catch (err) {
     console.error('Error creating post:', err);
-    res.status(500).json({ error: 'Failed to create post' });
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to create post' });
   }
 };
 
+
 export const getAllPosts = async (_req: Request, res: Response): Promise<void> => {
   try {
-    const posts = await AppDataSource.getRepository(Post).find({
-      order: { created_at: 'DESC' },
-    });
+    const posts = await PostService.getAllPosts();
     res.json(posts);
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: 'Failed to fetch posts' });
   }
 };
 
 export const getPostById = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
   try {
-    const post = await AppDataSource.getRepository(Post).findOneBy({ id: Number(id) });
+    const { id } = req.params;
+    const post = await PostService.getPostById(Number(id));
     if (!post) {
       res.status(404).json({ error: 'Post not found' });
       return;
     }
     res.json(post);
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: 'Failed to fetch post' });
   }
 };
 
 export const updatePost = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { title, body } = req.body;
-  const userId = (req as any).userId;
-
   try {
-    const postRepo = AppDataSource.getRepository(Post);
-    const post = await postRepo.findOneBy({ id: Number(id) });
+    const { id } = req.params;
+    const { title, body } = req.body;
+    const userId = (req as any).userId;
 
-    if (!post) {
-      res.status(404).json({ error: 'Post not found' });
-      return;
-    }
-
-    if (post.author !== userId) {
-      res.status(403).json({ error: 'Not authorized' });
-      return;
-    }
-
-    post.title = title;
-    post.body = body;
-    post.updated_at = new Date();
-
-    const updatedPost = await postRepo.save(post);
+    const updatedPost = await PostService.updatePost(Number(id), { title, body }, userId);
     res.json(updatedPost);
-  } catch {
-    res.status(500).json({ error: 'Failed to update post' });
+  } catch (err) {
+    if (err instanceof Error && (err.message === 'Post not found' || err.message === 'Not authorized')) {
+      res.status(err.message === 'Post not found' ? 404 : 403).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: 'Failed to update post' });
+    }
   }
 };
 
 export const deletePost = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const userId = (req as any).userId;
-
   try {
-    const postRepo = AppDataSource.getRepository(Post);
-    const post = await postRepo.findOneBy({ id: Number(id) });
+    const { id } = req.params;
+    const userId = (req as any).userId;
 
-    if (!post) {
-      res.status(404).json({ error: 'Post not found' });
-      return;
-    }
-
-    if (post.author !== userId) {
-      res.status(403).json({ error: 'Not authorized' });
-      return;
-    }
-
-    await postRepo.remove(post);
+    await PostService.deletePost(Number(id), userId);
     res.json({ message: 'Post deleted' });
-  } catch {
-    res.status(500).json({ error: 'Failed to delete post' });
+  } catch (err) {
+    if (err instanceof Error && (err.message === 'Post not found' || err.message === 'Not authorized')) {
+      res.status(err.message === 'Post not found' ? 404 : 403).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: 'Failed to delete post' });
+    }
   }
 };

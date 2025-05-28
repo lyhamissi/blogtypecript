@@ -7,8 +7,7 @@ export const createUserSchema = z.object({
         username: nameSchema,
         email: emailSchema,
         password: passwordSchema,
-        UserRole: z.enum(['USER', 'ADMIN']).default('USER')
-
+        UserRole: z.nativeEnum(UserRole).default(UserRole.USER)
 
     })
 })
@@ -19,13 +18,13 @@ export const updateUserSchema = z.object({
         username: nameSchema.optional(),
         email: emailSchema.optional(),
         password: passwordSchema.optional(),
-        UserRole: z.enum(['USER', 'ADMIN']).optional(),
+        UserRole: z.nativeEnum(UserRole).optional(),
         isActive: z.boolean().optional(),
-    })
-    .refine((data) => Object.keys(data) .length > 0, {
+    }).refine((data) => Object.keys(data).length > 0, {
         message: "At least one field must be provided for update",
     }),
 });
+;
 
- export type CreateUserInput = z.infer<typeof createUserSchema>
- export type UpdateUserInput = z.infer<typeof updateUserSchema>
+export type CreateUserInput = z.infer<typeof createUserSchema>
+export type UpdateUserInput = z.infer<typeof updateUserSchema>
