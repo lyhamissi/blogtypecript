@@ -113,17 +113,20 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 //  Get Profile
 //  Get Profile (supports admin viewing others)
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
-  const { userId, userRole } = (req as any).user || {};
+const { id: userId, userRole } = (req as any).user || {};
 
-  // `admin` can fetch any user by ID (query param), `user` can only fetch their own
-  const targetUserId = req.query.userId ? parseInt(req.query.userId as string) : userId;
+  // Try to get userId from query param if admin wants other profile
+  const queryUserId = req.query.userId ? parseInt(req.query.userId as string, 10) : undefined;
 
-  if (!targetUserId) {
+  // Validate userId from query param
+  const targetUserId = !isNaN(queryUserId!) ? queryUserId : userId;
+
+  if (!targetUserId || typeof targetUserId !== 'number') {
     res.status(400).json({ error: 'User ID missing or invalid' });
     return;
   }
 
-  // Deny if user is not admin and tries to access another user's profile
+  // Deny if non-admin tries to access another user's profile
   if (userRole !== UserRole.ADMIN && targetUserId !== userId) {
     res.status(403).json({ error: 'Unauthorized to access this profile' });
     return;
@@ -147,6 +150,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ error: 'Could not fetch profile details' });
   }
 };
+
 
 
 //  Verify Email

@@ -28,7 +28,8 @@
     "pg": "^8.16.0",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.24",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.25.32"
   },
   "devDependencies": {
     "@babel/core": "^7.27.1",
