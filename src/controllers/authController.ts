@@ -29,7 +29,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
     const existingUsername = await userRepository.findOne({ where: { username } });
     if (existingUsername) {
-      res.status(400).json({ error: 'Username already taken' });
+      res.status(400).json({ error: 'Username alread y taken' });
       return;
     }
 
@@ -110,19 +110,29 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 };
 
 //  Get Profile
+//  Get Profile (supports admin viewing others)
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
-  const userId = (req as any).userId;
+  const { userId, userRole } = (req as any).user || {};
 
-  if (!userId) {
-    res.status(401).json({ error: 'User not authenticated' });
+  // `admin` can fetch any user by ID (query param), `user` can only fetch their own
+  const targetUserId = req.query.userId ? parseInt(req.query.userId as string) : userId;
+
+  if (!targetUserId) {
+    res.status(400).json({ error: 'User ID missing or invalid' });
+    return;
+  }
+
+  // Deny if user is not admin and tries to access another user's profile
+  if (userRole !== UserRole.ADMIN && targetUserId !== userId) {
+    res.status(403).json({ error: 'Unauthorized to access this profile' });
     return;
   }
 
   try {
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({
-      where: { id: userId },
-      select: ['id', 'username', 'email', 'created_at'],
+      where: { id: targetUserId },
+      select: ['id', 'username', 'email', 'created_at', 'userRole'],
     });
 
     if (!user) {
@@ -136,6 +146,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ error: 'Could not fetch profile details' });
   }
 };
+
 
 //  Verify Email
 export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
@@ -235,3 +246,105 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 
   res.json({ message: 'Password reset successful' });
 };
+
+
+// Edit a user by admin
+export const editUser = async (req: Request, res: Response): Promise<void> => {
+  const { userId, userRole } = (req as any).user;
+
+  // Only admin can edit users
+  if (userRole !== UserRole.ADMIN) {
+    res.status(403).json({ error: 'Only admins can edit users' });
+    return;
+  }
+
+  const targetUserId = parseInt(req.params.id);
+  const { username, email, userRole: newRole } = req.body;
+
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({ where: { id: targetUserId } });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Update user fields if provided
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (newRole && Object.values(UserRole).includes(newRole)) {
+      user.userRole = newRole;
+    }
+
+    const updatedUser = await userRepository.save(user);
+    res.json({
+      message: 'User updated successfully',
+      user: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        userRole: updatedUser.userRole,
+      },
+    });
+  } catch (err) {
+    console.error('Edit User Error:', err);
+    res.status(500).json({ error: 'Could not update user' });
+  }
+};
+
+// Delete a user by admin
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  const { userId, userRole } = (req as any).user;
+
+  // Only admin can delete users
+  if (userRole !== UserRole.ADMIN) {
+    res.status(403).json({ error: 'Only admins can delete users' });
+    return;
+  }
+
+  const targetUserId = parseInt(req.params.id);
+
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({ where: { id: targetUserId } });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    await userRepository.remove(user);
+    res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    console.error('Delete User Error:', err);
+    res.status(500).json({ error: 'Could not delete user' });
+  }
+};
+
+// Get All Users (Admin Only)
+export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
+  const userId = (req as any).userId;
+
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+
+    // Check if the current user is an admin
+    const currentUser = await userRepository.findOne({ where: { id: userId } });
+    if (!currentUser || currentUser.userRole !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'Access denied. Admins only.' });
+      return;
+    }
+
+    // Retrieve all users excluding sensitive data like password
+    const users = await userRepository.find({
+      select: ['id', 'username', 'email', 'userRole', 'isEmailVerified', 'created_at'],
+    });
+
+    res.json({ users });
+  } catch (err) {
+    console.error('GetAllUsers Error:', err);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+};
+
