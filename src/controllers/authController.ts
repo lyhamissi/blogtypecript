@@ -69,9 +69,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json({
       message: 'User registered. Verification email sent.',
-      user: { id: savedUser.id, username: savedUser.username, email: savedUser.email },
+      user: { id: savedUser.id, username: savedUser.username, email: savedUser.email, userRole: savedUser.userRole },
     });
-  } catch (err) {
+  }
+   catch (err) {
     console.error('Registration Error:', err);
     res.status(500).json({ error: 'Registration failed' });
   }
