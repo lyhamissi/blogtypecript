@@ -1,9 +1,9 @@
 // src/data-source.ts
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { Post } from './entities/Post';
-import { User } from './entities/User';
-import { Token } from './entities/Token';
+import { Post } from '../entities/Post';
+import { User } from '../entities/User';
+import { Token } from '../entities/Token';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',

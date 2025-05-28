@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { AppDataSource } from '../database';
+import { AppDataSource } from '../config/database';
 import { User } from '../entities/User';
 import { Token } from '../entities/Token';
 import { generateToken } from '../utils/tokenGenerator';

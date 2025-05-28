@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Post } from './Post';
 import { Token } from './Token';
-import { UserRole } from '../enums/UserRole'; // adjust path if needed
+import { UserRole } from '../enums/UserRole'; 
 
 @Entity('users')
 export class User {
@@ -21,7 +21,7 @@ export class User {
     @Column({ length: 100, unique: true, nullable: false })
     email!: string;
 
-    @Column({ length: 255, nullable: false })
+    @Column({ length: 255, nullable: false, select: false })
     password!: string;
 
     @Column({ default: false })

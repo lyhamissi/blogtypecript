@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { AppDataSource } from '../database'; // adjust path if needed
+import { AppDataSource } from '../config/database'; // adjust path if needed
 import { User } from '../entities/User';
 
 export interface AuthenticatedRequest extends Request {
