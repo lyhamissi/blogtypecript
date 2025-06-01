@@ -138,6 +138,7 @@ export const AuthService = {
     const resetLink = `http://127.0.0.1:4000/api/auth/reset-password?token=${resetToken}`;
     const emailHtml = `
       <h1>Reset Your Password</h1>
+     < h3>Click the link to reset your password</h3>
       <a href="${resetLink}">Reset Password</a>
     `;
 

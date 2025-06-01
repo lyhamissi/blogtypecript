@@ -39,23 +39,23 @@ export const validate = (schema: ZodSchema<any>) => {
  * Helper function to manually validate any data object with a Zod schema.
  * Useful for internal logic outside of request handling.
  */
-// export const validateData = <T>(schema: ZodSchema<T>, data: unknown): T => {
-//   try {
-//     return schema.parse(data);
-//   } catch (error) {
-//     if (error instanceof ZodError) {
-//       const errors: Record<string, string[]> = {};
+export const validateData = <T>(schema: ZodSchema<T>, data: unknown): T => {
+  try {
+    return schema.parse(data);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errors: Record<string, string[]> = {};
 
-//       error.errors.forEach((err) => {
-//         const path = err.path.join('.');
-//         if (!errors[path]) {
-//           errors[path] = [];
-//         }
-//         errors[path].push(err.message);
-//       });
+      error.errors.forEach((err) => {
+        const path = err.path.join('.');
+        if (!errors[path]) {
+          errors[path] = [];
+        }
+        errors[path].push(err.message);
+      });
 
-//       throw new ValidationError(errors);
-//     }
-//     throw error;
-//   }
-// };
+      throw new ValidationError(errors);
+    }
+    throw error;
+  }
+};

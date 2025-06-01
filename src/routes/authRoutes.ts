@@ -11,11 +11,13 @@ import {
   deleteUser,
 } from '../controllers/authController';
 import { authMiddleware } from '../middlewares/authMiddleware';
+import { validate } from '../middlewares/validation.middleware';
+import { createUserSchema } from '../Schema/user.schema';
 
 const router = Router();
 
 // Auth routes for register and login
-router.post('/register', register);
+router.post('/register',validate(createUserSchema), register);
 router.post('/login', login);
 
 // Protected route for getting a profile of a logged in user

@@ -1,15 +1,43 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { AuthService } from '../services/authServices';
-
-export const register = async (req: Request, res: Response) => {
+import { asyncHandler } from '../middlewares/errorHandler';
+import { ApiResponse, AuthenticatedRequest } from '../types/common.types';
+import { CreateUserInput } from '../Schema/user.schema';
+// export const register = async (req: Request, res: Response) => {
+//   try {
+//     const user = await AuthService.register(req.body);
+//     res.status(201).json({ message: 'User registered. Verification email sent.', user });
+//   } catch (err: any) {
+//     res.status(400).json({ error: err.message });
+//   }
+// };
+export const register = asyncHandler(async (
+  req: AuthenticatedRequest & CreateUserInput,
+  res: Response<ApiResponse>,
+  next: NextFunction
+) => {
   try {
+    console.log('Incoming Register Request:', req.body);
     const user = await AuthService.register(req.body);
-    res.status(201).json({ message: 'User registered. Verification email sent.', user });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully. Verification E-mail sent.',
+      data: {
+        user: {
+          id: user.id,
+          name: user.username,
+          email: user.email,
+          role: user.userRole
+        }
+      }
+    })
   }
-};
+  catch (err) {
+    console.error('Registration error:', err);
+    next(err);
+  }
 
+  }) as RequestHandler;
 export const login = async (req: Request, res: Response) => {
   try {
     const token = await AuthService.login(req.body);

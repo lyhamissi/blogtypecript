@@ -4,9 +4,9 @@ import { UserRole } from "../enums/UserRole";
 
 export const createUserSchema = z.object({
     body: z.object({
-        username: nameSchema,
-        email: emailSchema,
-        password: passwordSchema,
+        username: z.string().min(3, 'Username must be at least 3 characters long'),
+        email: z.string().email('Invalid email format'),
+        password: z.string().min(6, 'Password must be at least 6 characters long'),
         UserRole: z.nativeEnum(UserRole).default(UserRole.USER)
 
     })
