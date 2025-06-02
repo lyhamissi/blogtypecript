@@ -64,10 +64,14 @@ export const AuthService = {
       userRole: savedUser.userRole,
     };
   },
-
   async login({ email, password }: LoginInput) {
     const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOne({ where: { email } });
+
+    const user = await userRepository
+      .createQueryBuilder("user")
+      .addSelect("user.password")
+      .where("user.email = :email", { email })
+      .getOne();
 
     if (!user) throw new Error('User not found');
     if (!user.isEmailVerified) throw new Error('Please verify your email before logging in.');
@@ -77,6 +81,7 @@ export const AuthService = {
 
     return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
   },
+
 
   async getProfile(requestingUserId: number, requestingUserRole: UserRole, targetId?: number) {
     const userRepository = AppDataSource.getRepository(User);
