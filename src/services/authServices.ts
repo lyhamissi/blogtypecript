@@ -8,7 +8,7 @@ import { sendEmail } from '../utils/emailSender';
 import { UserRole } from '../enums/UserRole';
 import { RegisterInput, LoginInput, EditUserInput } from '../types/authTypes';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'yoursecret';
+const JWT_SECRET = process.env.JWT_SECRET || 'lyhamissi';
 
 export const AuthService = {
   async register({ username, email, password, userRole }: RegisterInput) {
