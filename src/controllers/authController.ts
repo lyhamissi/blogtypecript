@@ -21,6 +21,7 @@ export const register = asyncHandler(async (
     const user = await AuthService.register(req.body);
     res.status(201).json({
       success: true,
+      code: 201,
       message: 'User registered successfully. Verification E-mail sent.',
       data: {
         user: {
@@ -37,13 +38,22 @@ export const register = asyncHandler(async (
     next(err);
   }
 
-  }) as RequestHandler;
+}) as RequestHandler;
 export const login = async (req: Request, res: Response) => {
   try {
     const token = await AuthService.login(req.body);
-    res.json({ token });
+    res.json({
+      success: true,
+      code: 200,
+      message: "Login successfully",
+      token: token
+    });
   } catch (err: any) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({
+      success: false,
+      code: 400,
+      message: err.message
+    });
   }
 };
 

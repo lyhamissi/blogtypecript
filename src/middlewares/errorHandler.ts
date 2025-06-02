@@ -20,6 +20,7 @@ export const errorHandler = (
   if (error instanceof ValidationError) {
     res.status(400).json({
       success: false,
+      code:400,
       message: error.message,
       errors: error.errors
     });
@@ -30,6 +31,7 @@ export const errorHandler = (
   if (error instanceof AppError) {
     res.status(error.statusCode).json({
       success: false,
+      code:400,
       message: error.message
     });
     return;
@@ -48,6 +50,7 @@ export const errorHandler = (
 
     res.status(statusCode).json({
       success: false,
+      code:400,
       message
     });
     return;
@@ -57,6 +60,7 @@ export const errorHandler = (
   if (error.name === 'JsonWebTokenError') {
     res.status(401).json({
       success: false,
+      code:401,
       message: 'Invalid token'
     });
     return;
@@ -65,6 +69,7 @@ export const errorHandler = (
   if (error.name === 'TokenExpiredError') {
     res.status(401).json({
       success: false,
+      code:401,
       message: 'Token expired'
     });
     return;
@@ -73,6 +78,7 @@ export const errorHandler = (
   // Default error
   res.status(500).json({
     success: false,
+    code:500,
     message: process.env.NODE_ENV === 'production' 
       ? 'Internal server error' 
       : error.message
