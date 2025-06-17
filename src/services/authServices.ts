@@ -11,59 +11,62 @@ import { RegisterInput, LoginInput, EditUserInput } from '../types/authTypes';
 const JWT_SECRET = process.env.JWT_SECRET || 'lyhamissi';
 
 export const AuthService = {
-  async register({ username, email, password, userRole }: RegisterInput) {
-    const userRepository = AppDataSource.getRepository(User);
-    const tokenRepository = AppDataSource.getRepository(Token);
+async register({ username, email, password, userRole, profileImage }: RegisterInput & { profileImage?: string }) {
+  const userRepository = AppDataSource.getRepository(User);
+  const tokenRepository = AppDataSource.getRepository(Token);
 
-    const existing = await userRepository.findOne({ where: { email } });
-    if (existing) throw new Error('User already exists');
+  const existing = await userRepository.findOne({ where: { email } });
+  if (existing) throw new Error('User already exists');
 
-    if (userRole && !Object.values(UserRole).includes(userRole)) {
-      throw new Error('Invalid user role');
-    }
+  if (userRole && !Object.values(UserRole).includes(userRole)) {
+    throw new Error('Invalid user role');
+  }
 
-    const existingUsername = await userRepository.findOne({ where: { username } });
-    if (existingUsername) throw new Error('Username already taken');
+  const existingUsername = await userRepository.findOne({ where: { username } });
+  if (existingUsername) throw new Error('Username already taken');
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = userRepository.create({
-      username,
-      email,
-      password: hashedPassword,
-      isEmailVerified: false,
-      userRole: userRole || UserRole.USER,
-    });
+  const newUser = userRepository.create({
+    username,
+    email,
+    password: hashedPassword,
+    isEmailVerified: false,
+    userRole: userRole || UserRole.USER, 
+    profileImage: profileImage || null,
+  });
 
-    const savedUser = await userRepository.save(newUser);
+  const savedUser = await userRepository.save(newUser);
 
-    const verificationToken = generateToken();
-    const tokenEntity = tokenRepository.create({
-      userId: savedUser.id,
-      token: verificationToken,
-      type: 'email_verification',
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
-      used: false,
-    });
+  const verificationToken = generateToken();
+  const tokenEntity = tokenRepository.create({
+    userId: savedUser.id,
+    token: verificationToken,
+    type: 'email_verification',
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+    used: false,
+  });
 
-    await tokenRepository.save(tokenEntity);
+  await tokenRepository.save(tokenEntity);
 
-    const verificationLink = `http://127.0.0.1:4000/api/auth/verify-email?token=${verificationToken}`;
-    const emailHtml = `
-      <h1>Email Verification</h1>
-      <p>Please verify your email by clicking the link below:</p>
-      <a href="${verificationLink}">Verify Email</a>
-    `;
+  const verificationLink = `http://127.0.0.1:4000/api/auth/verify-email?token=${verificationToken}`;
+  const emailHtml = `
+    <h1>Email Verification</h1>
+    <p>Please verify your email by clicking the link below:</p>
+    <a href="${verificationLink}">Verify Email</a>
+  `;
 
-    await sendEmail(savedUser.email, 'Verify your email', emailHtml);
+  await sendEmail(savedUser.email, 'Verify your email', emailHtml);
 
-    return {
-      id: savedUser.id,
-      username: savedUser.username,
-      email: savedUser.email,
-      userRole: savedUser.userRole,
-    };
-  },
+  return {
+    id: savedUser.id,
+    username: savedUser.username,
+    email: savedUser.email,
+    userRole: savedUser.userRole,
+    profileImage: savedUser.profileImage, 
+  };
+}
+,
   async login({ email, password }: LoginInput) {
     const userRepository = AppDataSource.getRepository(User);
 

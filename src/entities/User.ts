@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Post } from './Post';
 import { Token } from './Token';
-import { UserRole } from '../enums/UserRole'; 
+import { UserRole } from '../enums/UserRole';
 
 @Entity('users')
 export class User {
@@ -33,6 +33,10 @@ export class User {
         default: UserRole.USER,
     })
     userRole!: UserRole;
+
+    // ✅ New column for profile image
+    @Column({ name: 'profile_image', type: 'varchar', length: 255, nullable: true })
+    profileImage!: string | null;
 
     @CreateDateColumn({ name: 'created_at' })
     created_at!: Date;
