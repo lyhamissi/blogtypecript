@@ -4,6 +4,7 @@ import { User } from '../entities/User';
 
 export interface AuthenticatedRequest extends Request {
   user?: User;
+   file?: Express.Multer.File;
 }
 
 export interface ValidationResult<T> {
@@ -12,7 +13,7 @@ export interface ValidationResult<T> {
   errors?: Record<string, string[]>;
 }
 
-export type UserRole = 'USER' | 'ADMIN';
+export type UserRole = 'USER' | 'ADMIN'|'SUPERADMIN';
 
 export interface ApiResponse<T = any> {
   success: boolean;

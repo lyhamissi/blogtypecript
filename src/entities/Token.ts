@@ -24,7 +24,7 @@ export class Token {
   token!: string;
 
   @Column({ length: 50 })
-  type!: 'password_reset' | 'email_verification';
+  type!: 'password_reset' | 'email_verification'| 'login';
 
   @Column({ type: 'timestamp' })
   expiresAt!: Date;

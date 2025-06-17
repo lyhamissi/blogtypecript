@@ -11,14 +11,27 @@ import { CreateUserInput } from '../Schema/user.schema';
 //     res.status(400).json({ error: err.message });
 //   }
 // };
-export const register = asyncHandler(async (
-  req: AuthenticatedRequest & CreateUserInput,
+export const register: RequestHandler = asyncHandler(async (
+  req: AuthenticatedRequest,
   res: Response<ApiResponse>,
   next: NextFunction
 ) => {
   try {
     console.log('Incoming Register Request:', req.body);
-    const user = await AuthService.register(req.body);
+
+
+    const profile_image = req.file?.filename;
+
+
+    const userData = {
+      ...req.body,       
+      profile_image,
+    };
+
+
+    const user = await AuthService.register(userData);
+
+
     res.status(201).json({
       success: true,
       code: 201,
@@ -28,31 +41,31 @@ export const register = asyncHandler(async (
           id: user.id,
           name: user.username,
           email: user.email,
-          role: user.userRole
-        }
-      }
-    })
-  }
-  catch (err) {
+          role: user.userRole,
+          profile_image: user.profile_image,
+        },
+      },
+    });
+  } catch (err) {
     console.error('Registration error:', err);
     next(err);
   }
-
-}) as RequestHandler;
+});
 export const login = async (req: Request, res: Response) => {
   try {
-    const token = await AuthService.login(req.body);
+    const { token, user } = await AuthService.login(req.body);
     res.json({
       success: true,
       code: 200,
       message: "Login successfully",
-      token: token
+      token,
+      user,
     });
   } catch (err: any) {
     res.status(400).json({
       success: false,
       code: 400,
-      message: err.message
+      message: err.message,
     });
   }
 };

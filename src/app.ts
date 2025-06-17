@@ -3,7 +3,7 @@ import authRoutes from './routes/authRoutes';
 import postRoutes from './routes/postRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 import { setupSwagger } from './swagger';
-
+import recipeRoutes from './routes/recipeRoutes';
 const app = express();
 
 setupSwagger(app);
@@ -11,6 +11,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/recipes', recipeRoutes);
 
 app.use(errorHandler);
 export default app;

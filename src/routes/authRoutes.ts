@@ -117,11 +117,11 @@ import {
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { validate } from '../middlewares/validation.middleware';
 import { createUserSchema } from '../Schema/user.schema';
-
+import upload from '../middlewares/multer';
 const router = Router();
 
 // Auth routes for register and login
-router.post('/register',validate(createUserSchema), register);
+router.post('/register',upload.single('profile_image'),validate(createUserSchema), register);
 router.post('/login', login);
 
 // Protected route for getting a profile of a logged in user

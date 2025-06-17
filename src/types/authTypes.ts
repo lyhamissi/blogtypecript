@@ -6,6 +6,7 @@ export interface RegisterInput {
   email: string;
   password: string;
   userRole?: UserRole;
+  profile_image?:string;
 }
 
 export interface LoginInput {
@@ -17,4 +18,5 @@ export interface EditUserInput {
   username?: string;
   email?: string;
   newRole?: UserRole;
+  profile_image?:string;
 }

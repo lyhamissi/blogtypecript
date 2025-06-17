@@ -9,7 +9,7 @@ import {
 import { Post } from './Post';
 import { Token } from './Token';
 import { UserRole } from '../enums/UserRole';
-
+import { Recipe } from './Recipes';
 @Entity('users')
 export class User {
     @PrimaryGeneratedColumn()
@@ -36,7 +36,7 @@ export class User {
 
     // ✅ New column for profile image
     @Column({ name: 'profile_image', type: 'varchar', length: 255, nullable: true })
-    profileImage!: string | null;
+    profile_image!: string | null;
 
     @CreateDateColumn({ name: 'created_at' })
     created_at!: Date;
@@ -49,4 +49,7 @@ export class User {
 
     @OneToMany(() => Token, token => token.user)
     tokens!: Token[];
+
+    @OneToMany(() => Recipe, recipe => recipe.addedBy)
+    recipes!: Recipe[];
 }

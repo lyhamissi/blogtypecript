@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import { Post } from '../entities/Post';
 import { User } from '../entities/User';
 import { Token } from '../entities/Token';
+import { Recipe } from '../entities/Recipes';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -12,6 +13,6 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  synchronize: false, // set to false in production
-  entities: [User, Post,Token],
+  synchronize: true, // set to false in production
+  entities: [User, Post,Token,Recipe],
 });

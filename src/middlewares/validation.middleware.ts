@@ -9,12 +9,8 @@ import { ValidationError } from '../utils/errors';
 export const validate = (schema: ZodSchema<any>) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      schema.parse({
-        body: req.body,
-        query: req.query,
-        params: req.params,
-      });
-      next();
+      schema.parse(req.body);
+       next();
     } catch (error) {
       if (error instanceof ZodError) {
         const errors: Record<string, string[]> = {};
