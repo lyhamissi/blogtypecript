@@ -19,6 +19,16 @@ exports.AppDataSource = new typeorm_1.DataSource({
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    synchronize: true, // set to false in production
+    url: process.env.DATABASE_URL,
     entities: [User_1.User, Post_1.Post, Token_1.Token, Recipes_1.Recipe],
+    migrations: ['dist/migrations/*.js'],
+    synchronize: false,
+    ssl: {
+        rejectUnauthorized: false, // Accept self-signed certs
+    },
+    extra: {
+        ssl: {
+            rejectUnauthorized: false,
+        },
+    },
 });

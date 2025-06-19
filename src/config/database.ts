@@ -15,9 +15,16 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  synchronize: true, // set to false in production
+  url: process.env.DATABASE_URL,
   entities: [User, Post,Token,Recipe],
+  migrations: ['src/migrations/*.ts'],
+  synchronize: false,
   ssl: {
-    rejectUnauthorized: false, // allows self-signed certs (safe with Aiven)
+  rejectUnauthorized: false, // Accept self-signed certs
+},
+extra: {
+  ssl: {
+    rejectUnauthorized: false,
   },
+},
 });
