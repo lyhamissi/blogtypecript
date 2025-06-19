@@ -17,4 +17,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   synchronize: true, // set to false in production
   entities: [User, Post,Token,Recipe],
+  ssl: {
+    rejectUnauthorized: false, // allows self-signed certs (safe with Aiven)
+  },
 });
