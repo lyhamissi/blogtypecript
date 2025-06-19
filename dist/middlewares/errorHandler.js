@@ -1,5 +1,8 @@
-import { AppError, ValidationError } from '../utils/errors';
-export const errorHandler = (error, req, res, next) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.asyncHandler = exports.errorHandler = void 0;
+const errors_1 = require("../utils/errors");
+const errorHandler = (error, req, res, next) => {
     console.error('Error:', {
         message: error.message,
         stack: error.stack,
@@ -8,7 +11,7 @@ export const errorHandler = (error, req, res, next) => {
         timestamp: new Date().toISOString()
     });
     // Validation errors
-    if (error instanceof ValidationError) {
+    if (error instanceof errors_1.ValidationError) {
         res.status(400).json({
             success: false,
             code: 400,
@@ -18,7 +21,7 @@ export const errorHandler = (error, req, res, next) => {
         return;
     }
     // Operational errors
-    if (error instanceof AppError) {
+    if (error instanceof errors_1.AppError) {
         res.status(error.statusCode).json({
             success: false,
             code: 400,
@@ -68,9 +71,11 @@ export const errorHandler = (error, req, res, next) => {
             : error.message
     });
 };
+exports.errorHandler = errorHandler;
 // Async error wrapper
-export const asyncHandler = (fn) => {
+const asyncHandler = (fn) => {
     return (req, res, next) => {
         Promise.resolve(fn(req, res, next)).catch(next);
     };
 };
+exports.asyncHandler = asyncHandler;

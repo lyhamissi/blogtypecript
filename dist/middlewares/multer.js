@@ -1,14 +1,19 @@
-import multer from 'multer';
-import path from 'path';
-const storage = multer.diskStorage({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
+const storage = multer_1.default.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/'); // make sure this directory exists
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const ext = path.extname(file.originalname);
+        const ext = path_1.default.extname(file.originalname);
         cb(null, file.fieldname + '-' + uniqueSuffix + ext);
     },
 });
-const upload = multer({ storage });
-export default upload;
+const upload = (0, multer_1.default)({ storage });
+exports.default = upload;

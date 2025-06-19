@@ -1,3 +1,4 @@
+"use strict";
 /**
  * @swagger
  * /api/auth/login:
@@ -46,6 +47,10 @@
  *       400:
  *         description: Invalid credentials or other login failure
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 //register swagger comments 
 /**
  * @swagger
@@ -100,25 +105,25 @@
  *       400:
  *         description: Registration failed due to validation or duplicate email
  */
-import { Router } from 'express';
-import { register, login, getProfile, verifyEmail, forgotPassword, resetPassword, getAllUsers, editUser, deleteUser, } from '../controllers/authController';
-import { authMiddleware } from '../middlewares/authMiddleware';
-import { validate } from '../middlewares/validation.middleware';
-import { createUserSchema } from '../Schema/user.schema';
-import upload from '../middlewares/multer';
-const router = Router();
+const express_1 = require("express");
+const authController_1 = require("../controllers/authController");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const validation_middleware_1 = require("../middlewares/validation.middleware");
+const user_schema_1 = require("../Schema/user.schema");
+const multer_1 = __importDefault(require("../middlewares/multer"));
+const router = (0, express_1.Router)();
 // Auth routes for register and login
-router.post('/register', upload.single('profile_image'), validate(createUserSchema), register);
-router.post('/login', login);
+router.post('/register', multer_1.default.single('profile_image'), (0, validation_middleware_1.validate)(user_schema_1.createUserSchema), authController_1.register);
+router.post('/login', authController_1.login);
 // Protected route for getting a profile of a logged in user
-router.get('/profile/:id', authMiddleware, getProfile);
+router.get('/profile/:id', authMiddleware_1.authMiddleware, authController_1.getProfile);
 // Email verification 
-router.get('/verify-email', verifyEmail);
+router.get('/verify-email', authController_1.verifyEmail);
 // Forgot and reset password end-points
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', resetPassword);
+router.post('/forgot-password', authController_1.forgotPassword);
+router.post('/reset-password', authController_1.resetPassword);
 // Admin-only routes
-router.get('/users', authMiddleware, getAllUsers);
-router.put('/users/:id', authMiddleware, editUser);
-router.delete('/users/:id', authMiddleware, deleteUser);
-export default router;
+router.get('/users', authMiddleware_1.authMiddleware, authController_1.getAllUsers);
+router.put('/users/:id', authMiddleware_1.authMiddleware, authController_1.editUser);
+router.delete('/users/:id', authMiddleware_1.authMiddleware, authController_1.deleteUser);
+exports.default = router;

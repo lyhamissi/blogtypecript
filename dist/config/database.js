@@ -1,16 +1,24 @@
-import 'reflect-metadata';
-import { DataSource } from 'typeorm';
-import { Post } from '../entities/Post.js';
-import { User } from '../entities/User.js';
-import { Token } from '../entities/Token.js';
-import { Recipe } from '../entities/Recipes.js';
-export const AppDataSource = new DataSource({
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AppDataSource = void 0;
+require("reflect-metadata");
+const typeorm_1 = require("typeorm");
+const Post_1 = require("../entities/Post");
+const User_1 = require("../entities/User");
+const Token_1 = require("../entities/Token");
+const Recipes_1 = require("../entities/Recipes");
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+exports.AppDataSource = new typeorm_1.DataSource({
     type: 'postgres',
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || '5432', 10),
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    synchronize: true,
-    entities: [User, Post, Token, Recipe]
+    synchronize: true, // set to false in production
+    entities: [User_1.User, Post_1.Post, Token_1.Token, Recipes_1.Recipe],
 });
