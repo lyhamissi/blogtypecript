@@ -62,7 +62,7 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
   } catch (err) {
     if (
       err instanceof Error &&
-      (err.message === 'Post not found' || err.message === 'Not authorized')
+      (err.message === 'Post not found')
     ) {
       res
         .status(err.message === 'Post not found' ? 404 : 403)
