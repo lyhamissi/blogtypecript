@@ -4,17 +4,21 @@ import { User } from '../entities/User';
 
 interface CreatePostDTO {
   title: string;
-  body: string;
+  summary?: string;
+  content?: string;
+  image?: string;
   userId: number;
 }
 
 interface UpdatePostDTO {
-  title: string;
-  body: string;
+  title?: string;
+  summary?: string;
+  content?: string;
+  image?: string;
 }
 
 export const PostService = {
-  async createPost({ title, body, userId }: CreatePostDTO) {
+  async createPost({ title, summary, content, image, userId }: CreatePostDTO) {
     const postRepo = AppDataSource.getRepository(Post);
     const userRepo = AppDataSource.getRepository(User);
 
@@ -23,25 +27,34 @@ export const PostService = {
       throw new Error('User not found');
     }
 
-    const post = postRepo.create({ title, body, author });
+    const post = postRepo.create({
+      title,
+      summary,
+      content,
+      image,
+      author,
+    });
+
     return await postRepo.save(post);
   },
 
   async getAllPosts() {
     const postRepo = AppDataSource.getRepository(Post);
-    return await postRepo.find({ order: { created_at: 'DESC' } });
+    return await postRepo.find({
+      order: { created_at: 'DESC' },
+      relations: ['author'],
+    });
   },
 
   async getPostById(id: number) {
     const postRepo = AppDataSource.getRepository(Post);
-    const post = await postRepo.findOne({
+    return await postRepo.findOne({
       where: { id },
       relations: ['author'],
     });
-    return post;
   },
 
-  async updatePost(id: number, { title, body }: UpdatePostDTO, userId: number) {
+  async updatePost(id: number, updates: UpdatePostDTO, userId: number) {
     const postRepo = AppDataSource.getRepository(Post);
     const post = await postRepo.findOne({
       where: { id },
@@ -51,9 +64,7 @@ export const PostService = {
     if (!post) throw new Error('Post not found');
     if (post.author.id !== userId) throw new Error('Not authorized');
 
-    post.title = title;
-    post.body = body;
-    post.updated_at = new Date();
+    Object.assign(post, updates, { updated_at: new Date() });
 
     return await postRepo.save(post);
   },
@@ -69,6 +80,6 @@ export const PostService = {
     if (post.author.id !== userId) throw new Error('Not authorized');
 
     await postRepo.remove(post);
-    return true; // or return a message/object if preferred
+    return true;
   },
 };
