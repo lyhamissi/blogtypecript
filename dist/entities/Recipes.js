@@ -1,4 +1,3 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -8,54 +7,52 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Recipe = void 0;
-const typeorm_1 = require("typeorm");
-const User_1 = require("./User");
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { User } from './User';
 let Recipe = class Recipe {
 };
-exports.Recipe = Recipe;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    PrimaryGeneratedColumn(),
     __metadata("design:type", String)
 ], Recipe.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Recipe.prototype, "title", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    Column({ nullable: true }),
     __metadata("design:type", String)
 ], Recipe.prototype, "description", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Recipe.prototype, "instructions", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    Column({ nullable: true }),
     __metadata("design:type", String)
 ], Recipe.prototype, "image", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    Column({ nullable: true }),
     __metadata("design:type", String)
 ], Recipe.prototype, "category", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => User_1.User, user => user.recipes, { eager: true }),
-    (0, typeorm_1.JoinColumn)({ name: 'addedById' }),
-    __metadata("design:type", User_1.User)
+    ManyToOne(() => User, user => user.recipes, { eager: true }),
+    JoinColumn({ name: 'addedById' }),
+    __metadata("design:type", User)
 ], Recipe.prototype, "addedBy", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", String)
 ], Recipe.prototype, "addedById", void 0);
 __decorate([
-    (0, typeorm_1.CreateDateColumn)(),
+    CreateDateColumn(),
     __metadata("design:type", Date)
 ], Recipe.prototype, "createdAt", void 0);
 __decorate([
-    (0, typeorm_1.UpdateDateColumn)(),
+    UpdateDateColumn(),
     __metadata("design:type", Date)
 ], Recipe.prototype, "updatedAt", void 0);
-exports.Recipe = Recipe = __decorate([
-    (0, typeorm_1.Entity)('recipes')
+Recipe = __decorate([
+    Entity('recipes')
 ], Recipe);
+export { Recipe };

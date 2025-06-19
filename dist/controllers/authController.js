@@ -1,17 +1,5 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllUsers = exports.deleteUser = exports.editUser = exports.resetPassword = exports.forgotPassword = exports.verifyEmail = exports.getProfile = exports.login = exports.register = void 0;
-const authServices_1 = require("../services/authServices");
-const errorHandler_1 = require("../middlewares/errorHandler");
+import { AuthService } from '../services/authServices';
+import { asyncHandler } from '../middlewares/errorHandler';
 // export const register = async (req: Request, res: Response) => {
 //   try {
 //     const user = await AuthService.register(req.body);
@@ -20,13 +8,15 @@ const errorHandler_1 = require("../middlewares/errorHandler");
 //     res.status(400).json({ error: err.message });
 //   }
 // };
-exports.register = (0, errorHandler_1.asyncHandler)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+export const register = asyncHandler(async (req, res, next) => {
     try {
         console.log('Incoming Register Request:', req.body);
-        const profile_image = (_a = req.file) === null || _a === void 0 ? void 0 : _a.filename;
-        const userData = Object.assign(Object.assign({}, req.body), { profile_image });
-        const user = yield authServices_1.AuthService.register(userData);
+        const profile_image = req.file?.filename;
+        const userData = {
+            ...req.body,
+            profile_image,
+        };
+        const user = await AuthService.register(userData);
         res.status(201).json({
             success: true,
             code: 201,
@@ -46,10 +36,10 @@ exports.register = (0, errorHandler_1.asyncHandler)((req, res, next) => __awaite
         console.error('Registration error:', err);
         next(err);
     }
-}));
-const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+export const login = async (req, res) => {
     try {
-        const { token, user } = yield authServices_1.AuthService.login(req.body);
+        const { token, user } = await AuthService.login(req.body);
         res.json({
             success: true,
             code: 200,
@@ -65,82 +55,74 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: err.message,
         });
     }
-});
-exports.login = login;
-const getProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const getProfile = async (req, res) => {
     try {
         const { id: userId, userRole } = req.user || {};
         const targetId = req.query.userId ? parseInt(req.query.userId) : undefined;
-        const user = yield authServices_1.AuthService.getProfile(userId, userRole, targetId);
+        const user = await AuthService.getProfile(userId, userRole, targetId);
         res.json(user);
     }
     catch (err) {
         res.status(403).json({ error: err.message });
     }
-});
-exports.getProfile = getProfile;
-const verifyEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const verifyEmail = async (req, res) => {
     try {
         const token = req.query.token;
-        yield authServices_1.AuthService.verifyEmail(token);
+        await AuthService.verifyEmail(token);
         res.json({ message: 'Email verified successfully' });
     }
     catch (err) {
         res.status(400).json({ error: err.message });
     }
-});
-exports.verifyEmail = verifyEmail;
-const forgotPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const forgotPassword = async (req, res) => {
     try {
-        yield authServices_1.AuthService.forgotPassword(req.body.email);
+        await AuthService.forgotPassword(req.body.email);
         res.json({ message: 'Password reset link sent to email' });
     }
     catch (err) {
         res.status(400).json({ error: err.message });
     }
-});
-exports.forgotPassword = forgotPassword;
-const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const resetPassword = async (req, res) => {
     try {
         const { token, newPassword } = req.body;
-        yield authServices_1.AuthService.resetPassword(token, newPassword);
+        await AuthService.resetPassword(token, newPassword);
         res.json({ message: 'Password reset successful' });
     }
     catch (err) {
         res.status(400).json({ error: err.message });
     }
-});
-exports.resetPassword = resetPassword;
-const editUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const editUser = async (req, res) => {
     try {
         const { userId, userRole } = req.user;
-        const updatedUser = yield authServices_1.AuthService.editUser(userRole, parseInt(req.params.id), req.body);
+        const updatedUser = await AuthService.editUser(userRole, parseInt(req.params.id), req.body);
         res.json({ message: 'User updated successfully', user: updatedUser });
     }
     catch (err) {
         res.status(400).json({ error: err.message });
     }
-});
-exports.editUser = editUser;
-const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const deleteUser = async (req, res) => {
     try {
         const { userId, userRole } = req.user;
-        yield authServices_1.AuthService.deleteUser(userRole, parseInt(req.params.id));
+        await AuthService.deleteUser(userRole, parseInt(req.params.id));
         res.json({ message: 'User deleted successfully' });
     }
     catch (err) {
         res.status(400).json({ error: err.message });
     }
-});
-exports.deleteUser = deleteUser;
-const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const getAllUsers = async (req, res) => {
     try {
         const { userRole } = req.user;
-        const users = yield authServices_1.AuthService.getAllUsers(userRole);
+        const users = await AuthService.getAllUsers(userRole);
         res.json(users);
     }
     catch (err) {
         res.status(400).json({ error: err.message });
     }
-});
-exports.getAllUsers = getAllUsers;
+};

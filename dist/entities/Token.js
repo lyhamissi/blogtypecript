@@ -1,4 +1,3 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -8,46 +7,44 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Token = void 0;
-const typeorm_1 = require("typeorm");
-const User_1 = require("./User");
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, } from 'typeorm';
+import { User } from './User';
 let Token = class Token {
 };
-exports.Token = Token;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    PrimaryGeneratedColumn(),
     __metadata("design:type", Number)
 ], Token.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    Column(),
     __metadata("design:type", Number)
 ], Token.prototype, "userId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => User_1.User, (user) => user.tokens, { onDelete: 'CASCADE' }),
-    (0, typeorm_1.JoinColumn)({ name: 'userId' }),
-    __metadata("design:type", User_1.User)
+    ManyToOne(() => User, (user) => user.tokens, { onDelete: 'CASCADE' }),
+    JoinColumn({ name: 'userId' }),
+    __metadata("design:type", User)
 ], Token.prototype, "user", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 255 }),
+    Column({ length: 255 }),
     __metadata("design:type", String)
 ], Token.prototype, "token", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 50 }),
+    Column({ length: 50 }),
     __metadata("design:type", String)
 ], Token.prototype, "type", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp' }),
+    Column({ type: 'timestamp' }),
     __metadata("design:type", Date)
 ], Token.prototype, "expiresAt", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ default: false }),
+    Column({ default: false }),
     __metadata("design:type", Boolean)
 ], Token.prototype, "used", void 0);
 __decorate([
-    (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
+    CreateDateColumn({ name: 'created_at' }),
     __metadata("design:type", Date)
 ], Token.prototype, "createdAt", void 0);
-exports.Token = Token = __decorate([
-    (0, typeorm_1.Entity)('tokens')
+Token = __decorate([
+    Entity('tokens')
 ], Token);
+export { Token };

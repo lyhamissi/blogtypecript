@@ -1,25 +1,13 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteRecipe = exports.updateRecipe = exports.getRecipeById = exports.getAllRecipes = exports.createRecipe = void 0;
-const recipeServices_1 = require("../services/recipeServices");
-const recipeService = new recipeServices_1.RecipeService();
-const createRecipe = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+import { RecipeService } from '../services/recipeServices';
+const recipeService = new RecipeService();
+export const createRecipe = async (req, res, next) => {
     try {
         const data = req.body;
         // if (!req.user) {
         //   return res.status(401).json({ success: false, code: 401, message: 'Unauthorized' });
         // }
         // data.addedById = req.user.id;
-        const recipe = yield recipeService.createRecipe(data);
+        const recipe = await recipeService.createRecipe(data);
         res.status(201).json({
             success: true,
             code: 201,
@@ -30,11 +18,10 @@ const createRecipe = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     catch (err) {
         next(err);
     }
-});
-exports.createRecipe = createRecipe;
-const getAllRecipes = (_req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const getAllRecipes = async (_req, res, next) => {
     try {
-        const recipes = yield recipeService.getAllRecipes();
+        const recipes = await recipeService.getAllRecipes();
         res.json({
             success: true,
             code: 200,
@@ -44,12 +31,11 @@ const getAllRecipes = (_req, res, next) => __awaiter(void 0, void 0, void 0, fun
     catch (err) {
         next(err);
     }
-});
-exports.getAllRecipes = getAllRecipes;
-const getRecipeById = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const getRecipeById = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const recipe = yield recipeService.getRecipeById(id);
+        const recipe = await recipeService.getRecipeById(id);
         if (!recipe) {
             return res.status(404).json({ success: false, code: 404, message: 'Recipe not found' });
         }
@@ -62,13 +48,12 @@ const getRecipeById = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     catch (err) {
         next(err);
     }
-});
-exports.getRecipeById = getRecipeById;
-const updateRecipe = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const updateRecipe = async (req, res, next) => {
     try {
         const id = req.params.id;
         const data = req.body;
-        const recipe = yield recipeService.getRecipeById(id);
+        const recipe = await recipeService.getRecipeById(id);
         if (!recipe) {
             return res.status(404).json({ success: false, code: 404, message: 'Recipe not found' });
         }
@@ -76,7 +61,7 @@ const updateRecipe = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         // if (recipe.addedById !== req.user?.id) {
         //   return res.status(403).json({ success: false, code: 403, message: 'Not authorized' });
         // }
-        const updatedRecipe = yield recipeService.updateRecipe(id, data);
+        const updatedRecipe = await recipeService.updateRecipe(id, data);
         res.json({
             success: true,
             code: 200,
@@ -87,12 +72,11 @@ const updateRecipe = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     catch (err) {
         next(err);
     }
-});
-exports.updateRecipe = updateRecipe;
-const deleteRecipe = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const deleteRecipe = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const recipe = yield recipeService.getRecipeById(id);
+        const recipe = await recipeService.getRecipeById(id);
         if (!recipe) {
             return res.status(404).json({ success: false, code: 404, message: 'Recipe not found' });
         }
@@ -100,7 +84,7 @@ const deleteRecipe = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         // if (recipe.addedById !== req.user?.id) {
         //   return res.status(403).json({ success: false, code: 403, message: 'Not authorized' });
         // }
-        const success = yield recipeService.deleteRecipe(id);
+        const success = await recipeService.deleteRecipe(id);
         if (success) {
             res.json({
                 success: true,
@@ -115,5 +99,4 @@ const deleteRecipe = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     catch (err) {
         next(err);
     }
-});
-exports.deleteRecipe = deleteRecipe;
+};

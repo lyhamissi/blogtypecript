@@ -26,7 +26,6 @@ export const PostService = {
       summary,
       content,
       image,
-      // author field removed since no userId/author now
     });
 
     return await postRepo.save(post);
