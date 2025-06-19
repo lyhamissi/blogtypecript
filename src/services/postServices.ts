@@ -1,49 +1,74 @@
 import { AppDataSource } from '../config/database';
 import { Post } from '../entities/Post';
-import { User } from '../entities/User'; // make sure to import User
+import { User } from '../entities/User';
+
+interface CreatePostDTO {
+  title: string;
+  body: string;
+  userId: number;
+}
+
+interface UpdatePostDTO {
+  title: string;
+  body: string;
+}
 
 export const PostService = {
-    async createPost({ title, body, userId }: { title: string; body: string; userId: number }) {
-        const postRepo = AppDataSource.getRepository(Post);
-        const userRepo = AppDataSource.getRepository(User);
+  async createPost({ title, body, userId }: CreatePostDTO) {
+    const postRepo = AppDataSource.getRepository(Post);
+    const userRepo = AppDataSource.getRepository(User);
 
-        const author = await userRepo.findOneBy({ id: userId });
-        if (!author) {
-            throw new Error('User not found');
-        }
+    const author = await userRepo.findOneBy({ id: userId });
+    if (!author) {
+      throw new Error('User not found');
+    }
 
-        const post = postRepo.create({ title, body, author });
-        return await postRepo.save(post);
-    },
-    async getAllPosts() {
-        const postRepo = AppDataSource.getRepository(Post);
-        return await postRepo.find({ order: { created_at: 'DESC' } });
-    },
+    const post = postRepo.create({ title, body, author });
+    return await postRepo.save(post);
+  },
 
-    async getPostById(id: number) {
-        const postRepo = AppDataSource.getRepository(Post);
-        return await postRepo.findOneBy({ id });
-    },
+  async getAllPosts() {
+    const postRepo = AppDataSource.getRepository(Post);
+    return await postRepo.find({ order: { created_at: 'DESC' } });
+  },
 
-    async updatePost(id: number, { title, body }: { title: string; body: string }, userId: number) {
-        const postRepo = AppDataSource.getRepository(Post);
-        const post = await postRepo.findOneBy({ id });
-        if (!post) throw new Error('Post not found');
-        if (post.author.id !== userId) throw new Error('Not authorized');
+  async getPostById(id: number) {
+    const postRepo = AppDataSource.getRepository(Post);
+    const post = await postRepo.findOne({
+      where: { id },
+      relations: ['author'],
+    });
+    return post;
+  },
 
-        post.title = title;
-        post.body = body;
-        post.updated_at = new Date();
+  async updatePost(id: number, { title, body }: UpdatePostDTO, userId: number) {
+    const postRepo = AppDataSource.getRepository(Post);
+    const post = await postRepo.findOne({
+      where: { id },
+      relations: ['author'],
+    });
 
-        return await postRepo.save(post);
-    },
+    if (!post) throw new Error('Post not found');
+    if (post.author.id !== userId) throw new Error('Not authorized');
 
-    async deletePost(id: number, userId: number) {
-        const postRepo = AppDataSource.getRepository(Post);
-        const post = await postRepo.findOneBy({ id });
-        if (!post) throw new Error('Post not found');
-        if (post.author.id !== userId) throw new Error('Not authorized');
+    post.title = title;
+    post.body = body;
+    post.updated_at = new Date();
 
-        await postRepo.remove(post);
-    },
+    return await postRepo.save(post);
+  },
+
+  async deletePost(id: number, userId: number) {
+    const postRepo = AppDataSource.getRepository(Post);
+    const post = await postRepo.findOne({
+      where: { id },
+      relations: ['author'],
+    });
+
+    if (!post) throw new Error('Post not found');
+    if (post.author.id !== userId) throw new Error('Not authorized');
+
+    await postRepo.remove(post);
+    return true; // or return a message/object if preferred
+  },
 };

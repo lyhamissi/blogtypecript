@@ -1,83 +1,128 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProfile = exports.profile = exports.login = exports.register = void 0;
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const database_1 = require("../database");
-const JWT_SECRET = process.env.JWT_SECRET || 'yoursecret';
-const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { username, email, password } = req.body;
+import { AuthService } from '../services/authServices';
+import { asyncHandler } from '../middlewares/errorHandler';
+// export const register = async (req: Request, res: Response) => {
+//   try {
+//     const user = await AuthService.register(req.body);
+//     res.status(201).json({ message: 'User registered. Verification email sent.', user });
+//   } catch (err: any) {
+//     res.status(400).json({ error: err.message });
+//   }
+// };
+export const register = asyncHandler(async (req, res, next) => {
     try {
-        const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
-        const result = yield database_1.pool.query('INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *', [username, email, hashedPassword]);
-        res.status(201).json({ user: result.rows[0] });
+        console.log('Incoming Register Request:', req.body);
+        const profile_image = req.file?.filename;
+        const userData = {
+            ...req.body,
+            profile_image,
+        };
+        const user = await AuthService.register(userData);
+        res.status(201).json({
+            success: true,
+            code: 201,
+            message: 'User registered successfully. Verification E-mail sent.',
+            data: {
+                user: {
+                    id: user.id,
+                    name: user.username,
+                    email: user.email,
+                    role: user.userRole,
+                    profile_image: user.profile_image,
+                },
+            },
+        });
     }
     catch (err) {
-        res.status(500).json({ error: 'Registration failed' });
+        console.error('Registration error:', err);
+        next(err);
     }
 });
-exports.register = register;
-const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password } = req.body;
+export const login = async (req, res) => {
     try {
-        const result = yield database_1.pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        const user = result.rows[0];
-        if (!user) {
-            res.status(404).json({ error: 'User not found' });
-            return; // Important: return after sending response
-        }
-        const valid = yield bcryptjs_1.default.compare(password, user.password);
-        if (!valid) {
-            res.status(401).json({ error: 'Invalid credentials' });
-            return;
-        }
-        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
+        const { token, user } = await AuthService.login(req.body);
+        res.json({
+            success: true,
+            code: 200,
+            message: "Login successfully",
+            token,
+            user,
+        });
     }
     catch (err) {
-        res.status(500).json({ error: 'Login failed' });
+        res.status(400).json({
+            success: false,
+            code: 400,
+            message: err.message,
+        });
     }
-});
-exports.login = login;
-const profile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.userId; // typecast if userId is injected by middleware
+};
+export const getProfile = async (req, res) => {
     try {
-        const result = yield database_1.pool.query('SELECT id, username, email FROM users WHERE id = $1', [userId]);
-        res.json(result.rows[0]);
+        const { id: userId, userRole } = req.user || {};
+        const targetId = req.query.userId ? parseInt(req.query.userId) : undefined;
+        const user = await AuthService.getProfile(userId, userRole, targetId);
+        res.json(user);
     }
-    catch (_a) {
-        res.status(500).json({ error: 'Could not fetch profile' });
+    catch (err) {
+        res.status(403).json({ error: err.message });
     }
-});
-exports.profile = profile;
-const getProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.userId;
-    if (!userId) {
-        res.status(401).json({ error: 'User not authenticated' });
-        return;
-    }
+};
+export const verifyEmail = async (req, res) => {
     try {
-        const result = yield database_1.pool.query('SELECT id, username, email, created_at FROM users WHERE id = $1', [userId]);
-        if (result.rows.length === 0) {
-            res.status(404).json({ error: 'User not found' });
-            return;
-        }
-        res.json(result.rows[0]);
+        const token = req.query.token;
+        await AuthService.verifyEmail(token);
+        res.json({ message: 'Email verified successfully' });
     }
-    catch (_a) {
-        res.status(500).json({ error: 'Could not fetch profile details' });
+    catch (err) {
+        res.status(400).json({ error: err.message });
     }
-});
-exports.getProfile = getProfile;
+};
+export const forgotPassword = async (req, res) => {
+    try {
+        await AuthService.forgotPassword(req.body.email);
+        res.json({ message: 'Password reset link sent to email' });
+    }
+    catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+export const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        await AuthService.resetPassword(token, newPassword);
+        res.json({ message: 'Password reset successful' });
+    }
+    catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+export const editUser = async (req, res) => {
+    try {
+        const { userId, userRole } = req.user;
+        const updatedUser = await AuthService.editUser(userRole, parseInt(req.params.id), req.body);
+        res.json({ message: 'User updated successfully', user: updatedUser });
+    }
+    catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+export const deleteUser = async (req, res) => {
+    try {
+        const { userId, userRole } = req.user;
+        await AuthService.deleteUser(userRole, parseInt(req.params.id));
+        res.json({ message: 'User deleted successfully' });
+    }
+    catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+export const getAllUsers = async (req, res) => {
+    try {
+        const { userRole } = req.user;
+        const users = await AuthService.getAllUsers(userRole);
+        res.json(users);
+    }
+    catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};

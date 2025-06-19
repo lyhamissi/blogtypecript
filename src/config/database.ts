@@ -1,10 +1,12 @@
-// src/data-source.ts
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { Post } from '../entities/Post';
 import { User } from '../entities/User';
 import { Token } from '../entities/Token';
 import { Recipe } from '../entities/Recipes';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const AppDataSource = new DataSource({
   type: 'postgres',

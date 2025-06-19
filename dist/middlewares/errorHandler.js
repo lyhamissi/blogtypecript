@@ -1,0 +1,76 @@
+import { AppError, ValidationError } from '../utils/errors';
+export const errorHandler = (error, req, res, next) => {
+    console.error('Error:', {
+        message: error.message,
+        stack: error.stack,
+        url: req.url,
+        method: req.method,
+        timestamp: new Date().toISOString()
+    });
+    // Validation errors
+    if (error instanceof ValidationError) {
+        res.status(400).json({
+            success: false,
+            code: 400,
+            message: error.message,
+            errors: error.errors
+        });
+        return;
+    }
+    // Operational errors
+    if (error instanceof AppError) {
+        res.status(error.statusCode).json({
+            success: false,
+            code: 400,
+            message: error.message
+        });
+        return;
+    }
+    // TypeORM/Database errors
+    if (error.name === 'QueryFailedError') {
+        let message = 'Database operation failed';
+        let statusCode = 500;
+        // Handle unique constraint violations
+        if (error.message.includes('UNIQUE constraint failed')) {
+            message = 'A record with this information already exists';
+            statusCode = 409;
+        }
+        res.status(statusCode).json({
+            success: false,
+            code: 400,
+            message
+        });
+        return;
+    }
+    // JWT errors
+    if (error.name === 'JsonWebTokenError') {
+        res.status(401).json({
+            success: false,
+            code: 401,
+            message: 'Invalid token'
+        });
+        return;
+    }
+    if (error.name === 'TokenExpiredError') {
+        res.status(401).json({
+            success: false,
+            code: 401,
+            message: 'Token expired'
+        });
+        return;
+    }
+    // Default error
+    res.status(500).json({
+        success: false,
+        code: 500,
+        message: process.env.NODE_ENV === 'production'
+            ? 'Internal server error'
+            : error.message
+    });
+};
+// Async error wrapper
+export const asyncHandler = (fn) => {
+    return (req, res, next) => {
+        Promise.resolve(fn(req, res, next)).catch(next);
+    };
+};

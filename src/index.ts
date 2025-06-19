@@ -1,11 +1,8 @@
-// src/index.ts
 import dotenv from 'dotenv';
-dotenv.config();
-
-import 'reflect-metadata';
 import app from './app';
 import { AppDataSource } from './config/database';
 
+dotenv.config();
 const PORT = Number(process.env.PORT) || 5000;
 
 AppDataSource.initialize()
