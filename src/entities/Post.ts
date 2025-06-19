@@ -17,9 +17,6 @@ export class Post {
   @Column({ length: 255, nullable: false, default: 'Untitled' })
   title!: string;
 
-  @Column('text', { nullable: false })
-  body!: string;
-
   @Column({ type: 'text', nullable: true })
   summary?: string;
 
