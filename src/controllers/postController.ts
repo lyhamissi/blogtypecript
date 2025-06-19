@@ -4,14 +4,12 @@ import { PostService } from '../services/postServices';
 export const createPost = async (req: Request, res: Response): Promise<void> => {
   try {
     const { title, summary, content, image } = req.body;
-    const userId = (req as any).userId;
 
     const savedPost = await PostService.createPost({
       title,
       summary,
       content,
       image,
-      userId,
     });
 
     res.status(201).json(savedPost);
@@ -50,23 +48,18 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
   try {
     const { id } = req.params;
     const { title, summary, content, image } = req.body;
-    const userId = (req as any).userId;
 
-    const updatedPost = await PostService.updatePost(
-      Number(id),
-      { title, summary, content, image },
-      userId
-    );
+    const updatedPost = await PostService.updatePost(Number(id), {
+      title,
+      summary,
+      content,
+      image,
+    });
 
     res.json(updatedPost);
   } catch (err) {
-    if (
-      err instanceof Error &&
-      (err.message === 'Post not found')
-    ) {
-      res
-        .status(err.message === 'Post not found' ? 404 : 403)
-        .json({ error: err.message });
+    if (err instanceof Error && err.message === 'Post not found') {
+      res.status(404).json({ error: err.message });
     } else {
       res.status(500).json({ error: 'Failed to update post' });
     }
@@ -76,18 +69,12 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
 export const deletePost = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const userId = (req as any).userId;
 
-    await PostService.deletePost(Number(id), userId);
+    await PostService.deletePost(Number(id));
     res.json({ message: 'Post deleted' });
   } catch (err) {
-    if (
-      err instanceof Error &&
-      (err.message === 'Post not found' || err.message === 'Not authorized')
-    ) {
-      res
-        .status(err.message === 'Post not found' ? 404 : 403)
-        .json({ error: err.message });
+    if (err instanceof Error && err.message === 'Post not found') {
+      res.status(404).json({ error: err.message });
     } else {
       res.status(500).json({ error: 'Failed to delete post' });
     }

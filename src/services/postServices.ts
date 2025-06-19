@@ -7,7 +7,7 @@ interface CreatePostDTO {
   summary?: string;
   content?: string;
   image?: string;
-  userId: number;
+  // userId removed since not used for author now
 }
 
 interface UpdatePostDTO {
@@ -18,20 +18,15 @@ interface UpdatePostDTO {
 }
 
 export const PostService = {
-  async createPost({ title, summary, content, image, userId }: CreatePostDTO) {
+  async createPost({ title, summary, content, image }: CreatePostDTO) {
     const postRepo = AppDataSource.getRepository(Post);
-    const userRepo = AppDataSource.getRepository(User);
-
-    // const author = await userRepo.findOneBy({ id: userId });
-    // if (!author) {
-    //   throw new Error('User not found');
-    // }
 
     const post = postRepo.create({
       title,
       summary,
       content,
       image,
+      // author field removed since no userId/author now
     });
 
     return await postRepo.save(post);
@@ -41,7 +36,7 @@ export const PostService = {
     const postRepo = AppDataSource.getRepository(Post);
     return await postRepo.find({
       order: { created_at: 'DESC' },
-      relations: ['author'],
+      relations: ['author'], // keep author if you want
     });
   },
 
@@ -53,30 +48,22 @@ export const PostService = {
     });
   },
 
-  async updatePost(id: number, updates: UpdatePostDTO, userId: number) {
+  async updatePost(id: number, updates: UpdatePostDTO) {
     const postRepo = AppDataSource.getRepository(Post);
-    const post = await postRepo.findOne({
-      where: { id },
-      relations: ['author'],
-    });
+    const post = await postRepo.findOne({ where: { id } });
 
     if (!post) throw new Error('Post not found');
-    // if (post.author.id !== userId) throw new Error('Not authorized');
 
     Object.assign(post, updates, { updated_at: new Date() });
 
     return await postRepo.save(post);
   },
 
-  async deletePost(id: number, userId: number) {
+  async deletePost(id: number) {
     const postRepo = AppDataSource.getRepository(Post);
-    const post = await postRepo.findOne({
-      where: { id },
-      relations: ['author'],
-    });
+    const post = await postRepo.findOne({ where: { id } });
 
     if (!post) throw new Error('Post not found');
-    // if (post.author.id !== userId) throw new Error('Not authorized');
 
     await postRepo.remove(post);
     return true;
