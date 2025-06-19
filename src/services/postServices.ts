@@ -22,17 +22,16 @@ export const PostService = {
     const postRepo = AppDataSource.getRepository(Post);
     const userRepo = AppDataSource.getRepository(User);
 
-    const author = await userRepo.findOneBy({ id: userId });
-    if (!author) {
-      throw new Error('User not found');
-    }
+    // const author = await userRepo.findOneBy({ id: userId });
+    // if (!author) {
+    //   throw new Error('User not found');
+    // }
 
     const post = postRepo.create({
       title,
       summary,
       content,
       image,
-      author,
     });
 
     return await postRepo.save(post);
@@ -62,7 +61,7 @@ export const PostService = {
     });
 
     if (!post) throw new Error('Post not found');
-    if (post.author.id !== userId) throw new Error('Not authorized');
+    // if (post.author.id !== userId) throw new Error('Not authorized');
 
     Object.assign(post, updates, { updated_at: new Date() });
 
@@ -77,7 +76,7 @@ export const PostService = {
     });
 
     if (!post) throw new Error('Post not found');
-    if (post.author.id !== userId) throw new Error('Not authorized');
+    // if (post.author.id !== userId) throw new Error('Not authorized');
 
     await postRepo.remove(post);
     return true;
