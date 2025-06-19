@@ -6,7 +6,6 @@ import {
   updatePost,
   deletePost,
 } from '../controllers/postController';
-import { authMiddleware } from '../middlewares/authMiddleware';
 
 const router = Router();
 

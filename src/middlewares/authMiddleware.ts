@@ -20,7 +20,7 @@ export const authMiddleware = async (
 ): Promise<void> => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    res.status(401).json({ error: 'Authorization header missing' });
+    // res.status(401).json({ error: 'Authorization header missing' });
     return;
   }
 
